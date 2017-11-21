@@ -21,7 +21,7 @@ namespace mimixfe
 	 * @class XFERecorderError
 	 * @brief 録音関係実行時エラー. エラーコード 1000 番台.
 	 */
-	class XFERecorderError : public std::runtime_error
+	class DLL_PUBLIC XFERecorderError : public std::runtime_error
 	{
 	public:
 		explicit XFERecorderError(int errorno) : runtime_error(errorstr(errorno)), errorno_(errorno) {}
@@ -32,8 +32,8 @@ namespace mimixfe
 		int errorno_;
 	};
 
-	class XFERecorderImpl;
-	class XFERecorder
+	class DLL_LOCAL XFERecorderImpl;
+	class DLL_PUBLIC XFERecorder
 	{
 	public:
 		XFERecorder(

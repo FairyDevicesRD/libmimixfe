@@ -173,8 +173,8 @@ namespace mimixfe
 	{
 	public:
 		XFEStaticLocalizerConfig(std::initializer_list<Direction> directions) :
-			targetDirections_(directions.begin(), directions.end()),
-			XFELocalizerConfig(LocalizerType::staticLocalizer){}
+			XFELocalizerConfig(LocalizerType::staticLocalizer),
+			targetDirections_(directions.begin(), directions.end()){}
 		std::vector<Direction> targetDirections_;
 	};
 
