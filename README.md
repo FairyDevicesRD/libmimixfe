@@ -9,7 +9,8 @@ T-01 用バイナリとして提供される libmimixfe.so とそのヘッダフ
 
 ### 依存ライブラリ
 
-LED リングの制御のために libtumbler.so が必要です（ https://github.com/FairyDevicesRD/tumbler/tree/master/libtumbler )
+LED リングの制御のために libtumbler.so が必要です。
+https://github.com/FairyDevicesRD/tumbler/tree/master/libtumbler
 
 
 ### 利用例のビルド
