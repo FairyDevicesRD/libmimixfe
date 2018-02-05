@@ -46,19 +46,46 @@ libmimixfe が提供するクラスには、大きく２つの分類が有りま
 
 #### XFERecorder
 
-録音及び信号処理を実行するクラスです。
+録音及び信号処理を実行するクラスです。`XFERecorder.h` で定義されています。
 
 ##### コンストラクタ
 
 ``````````.cpp
-		XFERecorder(
-				const XFESourceConfig& sourceConfig,
-				const XFEECConfig& ecConfig,
-				const XFEVADConfig& vadConfig,
-				const XFEBeamformerConfig& bfConfig,
-				const XFELocalizerConfig& locConfig,
-				recorderCallback_t recorderCallback,
-				void *userdata);
+XFERecorder::XFERecorder(
+	const XFESourceConfig& sourceConfig,
+	const XFEECConfig& ecConfig,
+	const XFEVADConfig& vadConfig,
+	const XFEBeamformerConfig& bfConfig,
+	const XFELocalizerConfig& locConfig,
+	recorderCallback_t recorderCallback,
+	void *userdata);
 ``````````
+
+コンストラクタでは、各種設定データクラスを引数に取ります。設定データクラスはコンストラクタで初期値が設定されているので、必要に応じてメンバー変数を変更します。次に、`recorderCallback_t` 型のユーザー定義コールバック関数を与えます。このコールバック関数は、libmimixfe によって、音声が取得された任意のタイミングでメインスレッドとは異なるスレッドで呼び出されます（コールバック型 API）、最後に、任意のユーザー定義型データを引数に与えることができます。このデータは、コールバック関数に与えられます。コールバック関数の実装例は、サンプルプログラムを参照してください。
+
+このコンストラクタでは、libmimixfe 定義例外は送出されません。標準例外のみ送出される可能性があります。
+
+##### start() 
+
+``````````.cpp
+void XFERecorder::start()
+``````````
+
+この関数によって、録音及び信号処理が開始されます。この関数を呼び出してから、録音が開始されるまでに、マイクサブシステムを初期化するので、任意の待ち時間が発生する場合があります。待ち時間は典型的には１秒〜数秒です。
+
+利用例は、サンプルプログラムを参照してください。典型的には、この関数はアプリケーションの中で、例えば発話単位ごとに、何回も呼び出すような用い方はしません。アプリケーションの初期化時に一度だけ呼び出し、libmimixfe は常時動作状態となるように利用します。
+
+また start() された状態で、stop() せずに、連続的に繰り返し start() を呼ぶことはできません。
+
+##### start() 
+
+``````````.cpp
+void XFERecorder::stop()
+``````````
+
+この関数によって、録音及び信号処理が終了します。この関数を呼び出してから、実際に全内部処理が終了するまでには、バッファをフラッシュするため、任意の待ち時間が発生する場合があります。待ち時間は典型的には1秒〜数秒です。
+
+この関数は、`XFERecorder` クラスのデストラクタで呼び出されるので、典型的には、ユーザープログラム側から明示的に呼び出す必要はありません。
+
 
 
