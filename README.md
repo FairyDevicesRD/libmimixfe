@@ -216,7 +216,7 @@ libmimixfe では、多チャンネル音声信号を利用した目的音声信
 
 |変数名|初期値|単位／型|説明|
 |---|---|---|---|
-|targetDirections_|なし|std::vector<Direction>|Direction型変数のベクタによって１つ目的方向を指定します。本クラスのコンストラクタで指定することもできます。|
+|targetDirections_|なし|std::vector<Direction>|Direction型変数のベクタによって１つ以上の目的方向を指定します。本クラスのコンストラクタで指定することもできます。|
 	
 #### XFEDynamicLocalizerConfig
 	
