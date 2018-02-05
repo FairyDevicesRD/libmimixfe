@@ -16,7 +16,7 @@ LED リングの制御のために libtumbler.so が必要です（ https://gith
 
 T-01 実機上の Makefile が `examples/` 直下に用意されています。
 
-``````````{.sh}
+``````````.sh
 $ cd examples
 $ make
 ``````````
@@ -35,14 +35,30 @@ libmimixfe は Tumbler の 18ch マイクを直接入力とし、設定に従っ
 
 #### API 利用全体の流れ
 
-libmimixfe が提供するクラスには、大きく２つの分類が有ります。第一に、音声信号処理の内容を設定するための各種設定用データクラス（構造体）であり、各信号処理機能に対応して、複数の設定用データクラスがあります。第二に、録音・信号処理を実際に実行するためのクラスで、`XFERecorder` クラスです。設定用データクラスを引数に与えた `XFERecorder` クラスによって録音と信号処理を行う、というのが libmimixfe の基本的な利用方法です。具体的には、以下のような手順となります。
+libmimixfe が提供するクラスには、大きく２つの分類が有ります。第一に、音声信号処理の内容を設定するための各種設定用データクラス（構造体）であり、各信号処理機能に対応して、複数の設定用データクラスがあります。これらは、`XFETypedef.h` に定義されています。第二に、録音・信号処理を実際に実行するためのクラスで、`XFERecorder` クラスです。これは `XFERecorder.h` に定義されています。
+設定用データクラスを引数に与えた `XFERecorder` クラスによって録音と信号処理を行う、というのが libmimixfe の基本的な利用方法です。具体的には、以下のような手順となります。
 
-1. libmimixfe の各種設定用データクラスの構築と必要に応じてメンバー変数の変更
-2. 前手順で構築したデータクラスと、ユーザー定義コールバック関数を引数に与えて `XFERecorder` クラスをコンストラクトする。
-3. start() 関数の呼び出しによって、録音及び信号処理を開始する
+1. libmimixfe の各種設定用データクラスを構築し、必要に応じてメンバー変数を変更する
+2. 前手順で構築したデータクラスと、ユーザー定義コールバック関数を引数に与えて `XFERecorder` クラスをコンストラクトする
+3. `XFERecorder::start()` 関数の呼び出しによって、録音及び信号処理を開始する
 4. メインスレッドを待機させる
-5. libmimixfe は音声が取得される都度、コンストラクタで指定されたユーザー定義コールバック関数を呼び出す。
+5. （libmimixfe によって、音声が取得される都度、コンストラクタで指定されたユーザー定義コールバック関数が呼びされます）
 
+#### XFERecorder
 
+録音及び信号処理を実行するクラスです。
+
+##### コンストラクタ
+
+``````````.cpp
+		XFERecorder(
+				const XFESourceConfig& sourceConfig,
+				const XFEECConfig& ecConfig,
+				const XFEVADConfig& vadConfig,
+				const XFEBeamformerConfig& bfConfig,
+				const XFELocalizerConfig& locConfig,
+				recorderCallback_t recorderCallback,
+				void *userdata);
+``````````
 
 
