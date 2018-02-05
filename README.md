@@ -118,7 +118,40 @@ while(rec.isActive()){
 
 #### XFERecorderError クラス
 
-`XFERecorder` クラスのメンバ関数から送出される可能性のある libmimixfe 定義例外クラスです。
+`XFERecorder` クラスのメンバ関数から送出される可能性のある libmimixfe 定義例外クラスです。本例外が発生した場合には、システムログに `errorstr()` の内容が自動的に記録されます。このクラスは `XFERecorder.h` で定義されています。
 
+##### errorno()
 
+``````````.cpp
+const int XFERecorderError::errorno()
+``````````
 
+ エラーコードを返します。
+
+##### errorstr()
+
+``````````.cpp
+const std::string XFERecorderError::errorstr()
+``````````
+
+可読なエラー文字列を返します。エラー文字列中には、エラーコードが含まれる場合があります。
+
+#### recorderCallback_t 型
+
+`XFERecorder` クラスのコンストラクタの引数に与える、ユーザー定義コールバック関数であり、`XFETypedef.h` で定義されています。
+
+``````````.cpp
+using recorderCallback_t = void (*)(
+	short* buffer,
+	size_t buflen,
+	SpeechState state,
+	int sourceId,
+	StreamInfo* info,
+	size_t infolen,
+	void* userdata);
+``````````
+
+第一引数には、libmimixfe の出力として、libmimixfe が録音及び設定に従って信号処理をした処理済音声が与えられるバッファです。
+第二引数は、第一引数に与えられたバッファの長さです。
+第三引数は、`SpeechState` 型変数で、VAD が有効な場合に、`XFETypedef.h` で定義される VAD の判定状態が返されます。VAD が無効な場合には未定義です。
+第四引数は、音源番号です。複数音源が同時検出される場合、最も
