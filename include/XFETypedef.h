@@ -11,6 +11,7 @@
 #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 #include <vector>
+#include <stddef.h>
 
 namespace mimixfe
 {
@@ -32,8 +33,8 @@ namespace mimixfe
 	 */
 	enum class DLL_PUBLIC MicrophoneUsage
 	{
-		DISCARD, //!< マイク入力を利用しない
-		INPUT,   //!< マイク入力を利用する
+		DISCARD,   //!< マイク入力を利用しない
+		INPUT,     //!< マイク入力を利用する
 		REFERENCE, //!< マイク入力を参照信号として利用する
 	};
 
@@ -54,7 +55,7 @@ namespace mimixfe
 		}
 
 		int samplingrate_ = 16000; // !< 出力サンプリングレート
-		int channels_ = 18; // !< 出力チャネル数
+		int channels_ = 18;
 		MicrophoneUsage microphoneUsage_[18]; // !< マイクの個別設定
 	};
 
@@ -62,7 +63,7 @@ namespace mimixfe
 	{
 	public:
 		bool enable_ = true;
-		int timeToActive_ = 60;
+		int timeToActive_ = 80;
 		int timeToInactive_ = 800;
 		int headPaddingTime_ = 600;
 		int tailPaddingTime_ = 600;

@@ -1,6 +1,6 @@
 /*
  * @file ex1.cpp
- * @brief 固定方向同時1音源抽出サンプル。
+ * @brief
  * @author Copyright (C) 2017 Fairy Devices Inc. http://www.fairydevices.jp/
  * @author Masato Fujino, created on: 2017/07/14
  */
@@ -43,7 +43,7 @@ void recorderCallback(
 
   // 画面表示で確認
   std::cout << "State: " << s << std::endl;
-  for(int i=0;i<infolen;++i){
+  for(size_t i=0;i<infolen;++i){
 	  std::cout << info[i].milliseconds_ << "[ms] " << info[i].rms_ << "[rms] " << static_cast<int>(info[i].speechProbability_) << "[%] ";
 	  std::cout << sourceId << " (" << info[i].extractedSoundSources_ << "/" << info[i].estimatedSoundSources_ << ")";
 	  std::cout << " angle=" << info[i].direction_.angle_ << ", azimuth=" << info[i].direction_.azimuth_ << std::endl;
@@ -52,15 +52,6 @@ void recorderCallback(
 
 int main(int argc, char** argv)
 {
-	// プロセス優先度設定. スムーズな実行のためには好ましい設定ですが root 権限を必要とします
-	 struct sched_param sp;
-	 sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
-	 int ret = sched_setscheduler(0, SCHED_FIFO, &sp);
-	 if(ret != 0){
-		 std::cerr << "Could not set scheduling policy, try sudo." << std::endl;
-		 return ret;
-	 }
-
 	 // XFE の実行
 	 using namespace mimixfe;
 	 XFESourceConfig s;
@@ -76,7 +67,7 @@ int main(int argc, char** argv)
 		rec.setLogLevel(LOG_UPTO(LOG_DEBUG)); // デバッグレベルのログから出力する
 		rec.start();
 		int countup = 0;
-		int timeout = 20;
+		int timeout = 30;
 		while(rec.isActive()){
 			std::cout << countup++  << " / " << timeout << std::endl;
 			sleep(1);

@@ -1,5 +1,5 @@
 /*
- * @file ex1.cpp
+ * @file ex2.cpp
  * @brief 固定方向同時複数音源抽出サンプル
  * @author Copyright (C) 2017 Fairy Devices Inc. http://www.fairydevices.jp/
  * @author Masato Fujino, created on: 2017/07/14
@@ -48,7 +48,7 @@ void recorderCallback(
 
   // 画面表示で確認
   std::cout << "State: " << s << std::endl;
-  for(int i=0;i<infolen;++i){
+  for(size_t i=0;i<infolen;++i){
 	  std::cout << info[i].milliseconds_ << "[ms] " << info[i].rms_ << "[rms] " << static_cast<int>(info[i].speechProbability_) << "[%] ";
 	  std::cout << "ID=" << sourceId << " (" << info[i].extractedSoundSources_ << "/" << info[i].estimatedSoundSources_ << ")";
 	  if(info[i].soundSourceDetected_){
@@ -61,22 +61,13 @@ void recorderCallback(
 
 int main(int argc, char** argv)
 {
-	// プロセス優先度設定. スムーズな実行のためには好ましい設定ですが root 権限を必要とします
-	 struct sched_param sp;
-	 sp.sched_priority = sched_get_priority_max(SCHED_FIFO);
-	 int ret = sched_setscheduler(0, SCHED_FIFO, &sp);
-	 if(ret != 0){
-		 std::cerr << "Could not set scheduling policy, try sudo." << std::endl;
-		 return ret;
-	 }
-
 	 // XFE の実行
 	 using namespace mimixfe;
 	 XFESourceConfig s;
 	 XFEECConfig e;
 	 XFEVADConfig v;
 	 XFEBeamformerConfig b;
-	 XFEStaticLocalizerConfig c({Direction(270, 90), Direction(180,90)});
+	 XFEStaticLocalizerConfig c({Direction(270, 90), Direction(90,90)});
 	 UserData data;
 	 data.file1_ = fopen("/tmp/debug_ex2_ch1.raw","w");
 	 data.file2_ = fopen("/tmp/debug_ex2_ch2.raw","w");
