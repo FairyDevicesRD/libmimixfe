@@ -47,7 +47,7 @@ void recorderCallback(
   }
 
   // 画面表示で確認
-  std::cout << "State: " << s << std::endl;
+  std::cout << "State: " << s << " ( ID = " << sourceId << " )" << std::endl;
   for(size_t i=0;i<infolen;++i){
 	  std::cout << info[i].milliseconds_ << "[ms] " << info[i].rms_ << "[rms] " << static_cast<int>(info[i].speechProbability_) << "[%] ";
 	  std::cout << "ID=" << sourceId << " (" << info[i].extractedSoundSources_ << "/" << info[i].estimatedSoundSources_ << ")";
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 		rec.setLogLevel(LOG_UPTO(LOG_DEBUG)); // デバッグレベルのログから出力する
 		rec.start();
 		int countup = 0;
-		int timeout = 20;
+		int timeout = 120;
 		while(rec.isActive()){
 			std::cout << countup++  << " / " << timeout << std::endl;
 			sleep(1);

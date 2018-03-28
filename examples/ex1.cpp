@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 		rec.setLogLevel(LOG_UPTO(LOG_DEBUG)); // デバッグレベルのログから出力する
 		rec.start();
 		int countup = 0;
-		int timeout = 30;
+		int timeout = 120;
 		while(rec.isActive()){
 			std::cout << countup++  << " / " << timeout << std::endl;
 			sleep(1);
