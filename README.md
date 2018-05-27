@@ -219,8 +219,8 @@ libmimixfe では、多チャンネル音声信号を利用した目的音声信
 |targetDirections_|なし|std::vector<Direction>|Direction型変数のベクタによって１つ以上の目的方向を指定します。本クラスのコンストラクタで指定することもできます。|
 	
 #### XFEDynamicLocalizerConfig クラス
-	
-現在は利用することができません。
+
+派生クラスのうち、この設定データクラスは、ビームフォーマーの目的方向を音源方向に向ける際に利用します。
 
 #### StreamInfo クラス
 
