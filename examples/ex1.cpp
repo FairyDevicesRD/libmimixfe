@@ -11,6 +11,7 @@
 #include <syslog.h>
 #include <string>
 #include <sched.h>
+#include <iomanip>
 #include "XFERecorder.h"
 #include "XFETypedef.h"
 
@@ -44,8 +45,10 @@ void recorderCallback(
   // 画面表示で確認
   std::cout << "State: " << s << std::endl;
   for(size_t i=0;i<infolen;++i){
-	  std::cout << info[i].milliseconds_ << "[ms] " << info[i].rms_ << "[rms] " << static_cast<int>(info[i].speechProbability_) << "[%] ";
-	  std::cout << sourceId << " (" << info[i].extractedSoundSources_ << "/" << info[i].estimatedSoundSources_ << ")";
+	  std::cout << info[i].milliseconds_ << "[ms] " <<
+	  std::fixed << std::setprecision(3)
+			  << info[i].rmsDbfs_ << "[dbFS] " << info[i].speechProbability_*100.0F << "[%] ";
+	  std::cout << sourceId << " ( " << info[i].numSoundSources_ << " )";
 	  std::cout << " angle=" << info[i].direction_.angle_ << ", azimuth=" << info[i].direction_.azimuth_ << std::endl;
   }
 }
@@ -58,7 +61,9 @@ int main(int argc, char** argv)
 	 XFEECConfig e;
 	 XFEVADConfig v;
 	 XFEBeamformerConfig b;
-	 XFEStaticLocalizerConfig c({Direction(270, 90)});
+	 XFEStaticLocalizerConfig c({Direction(270, 90), Direction(90, 90), Direction(0,90)});
+	 //c.area_ = XFELocalizerConfig::SearchArea::sphere;
+	 //c.maxSimultaneousSpeakers_ = 1;
 	 UserData data;
 	 data.file_ = fopen("/tmp/debug_ex1.raw","w");
 	 int return_status = 0;

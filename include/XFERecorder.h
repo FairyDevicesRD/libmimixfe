@@ -70,6 +70,11 @@ namespace mimixfe
 		 */
 		bool isActive() const;
 
+		/**
+		 * @brief モニタリングコールバックを設定する
+		 */
+		bool setMonitoringCallback(monitoringCallback_t monitoringCallback, MonitoringType t);
+
 	private:
 		std::unique_ptr<XFERecorderImpl> recorderImpl_;
 		bool status_;

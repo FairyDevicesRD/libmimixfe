@@ -1,10 +1,9 @@
 /*
  * @file ex3.cpp
- * @brief
+ * @brief 動的方向単一音源抽出サンプル
  * @author Copyright (C) 2017 Fairy Devices Inc. http://www.fairydevices.jp/
  * @author Masato Fujino, created on: 2017/07/14
  */
-
 
 #include <iostream>
 #include <unistd.h>
@@ -13,7 +12,6 @@
 #include <sched.h>
 #include "XFERecorder.h"
 #include "XFETypedef.h"
-
 
 class UserData
 {
@@ -44,7 +42,7 @@ void recorderCallback(
   // 画面表示で確認
   std::cout << "State: " << s << std::endl;
   for(size_t i=0;i<infolen;++i){
-	  std::cout << info[i].milliseconds_ << "[ms] " << info[i].rms_ << "[rms] " << static_cast<int>(info[i].speechProbability_) << "[%] ";
+	  std::cout << info[i].milliseconds_ << "[ms] " << info[i].rmsDbfs_ << "[dbFS] " << static_cast<int>(info[i].speechProbability_) << "[%] ";
 	  std::cout << sourceId << " (" << info[i].extractedSoundSources_ << "/" << info[i].estimatedSoundSources_ << ")";
 	  std::cout << " angle=" << info[i].direction_.angle_ << ", azimuth=" << info[i].direction_.azimuth_ << std::endl;
   }

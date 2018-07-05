@@ -11,6 +11,7 @@
 #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 #include <vector>
+#include <initializer_list>
 #include <stddef.h>
 
 namespace mimixfe
@@ -55,18 +56,23 @@ namespace mimixfe
 		}
 
 		int samplingrate_ = 16000; // !< 出力サンプリングレート
-		int channels_ = 18;
 		MicrophoneUsage microphoneUsage_[18]; // !< マイクの個別設定
+
+		//@TODO TODO 開発用（リリース時に消すこと）
+		int channels_ = 18;
 	};
 
 	class DLL_PUBLIC XFEVADConfig
 	{
 	public:
 		bool enable_ = true;
-		int timeToActive_ = 80;
-		int timeToInactive_ = 800;
-		int headPaddingTime_ = 600;
-		int tailPaddingTime_ = 600;
+		int timeToActive_ = 100;    //!< 発話開始判定に必要な長さ[ms]
+		int timeToInactive_ = 600;  //!< 発話終了判定に必要な長さ[ms]
+		int headPaddingTime_ = 400; //!< 切り出される発話区間先頭側を延長する長さ[ms]
+		int tailPaddingTime_ = 400; //!< 切り出される発話区間末尾側を延長する長さ[ms]
+		int dbfsThreshold_ = -96;   //!< 発話判定に必要な最低音量閾値[dbfs]
+
+		//@TODO TODO 開発用（リリース時に消すこと）
 		int rmsThreshold_ = 100;
 	};
 
@@ -175,8 +181,10 @@ namespace mimixfe
 	public:
 		XFEStaticLocalizerConfig(std::initializer_list<Direction> directions) :
 			XFELocalizerConfig(LocalizerType::staticLocalizer),
-			targetDirections_(directions.begin(), directions.end()){}
+			targetDirections_(directions.begin(), directions.end()),
+			maxSimultaneousSpeakers_(1){}
 		std::vector<Direction> targetDirections_;
+		int maxSimultaneousSpeakers_; //!< 同時定位する最大音源数。指定方向数以下である必要がある。
 	};
 
 	/**
@@ -201,16 +209,17 @@ namespace mimixfe
 	class DLL_PUBLIC StreamInfo
 	{
 	public:
-		int milliseconds_; // !< 経過時間[ms]
-		float rms_; // !< 平均音量[rms]
-		bool soundSourceDetected_; // !< 音源が定位されたかどうか
+		unsigned long long milliseconds_; // !< 経過時間[ms]
 		Direction direction_; // !< 推定音源方向
 		float speechProbability_; // !< 発話存在確率
+		float rmsDbfs_; // !< 平均音量[dbfs]
+		int numSoundSources_; //!< 抽出された音源数
+
+		//@TODO TODO リリース時に外す
+		float rms_; // !< 平均音量[rms]
+		bool soundSourceDetected_; // !< 音源が定位されたかどうか
 		int extractedSoundSources_; // !< 抽出された同時発生音源数（実際にコールバック関数で出力される）
 		int estimatedSoundSources_; // !< 推定された同時発生音源数
-		float f0_; // !< F0
-		float f1_; // !< F1
-		float f2_; // !< F2
 	};
 
 	using recorderCallback_t = void (*)(
@@ -220,6 +229,18 @@ namespace mimixfe
 			int sourceId,
 			StreamInfo* info,
 			size_t infolen,
+			void* userdata);
+
+	enum class DLL_PUBLIC MonitoringType
+	{
+		RAW, //!< 48k, 18ch 音声
+		ECD16CH, //!< 16k, 16ch, エコーキャンセル済音声
+		ECD1CH //!< 16k, 1ch 音声（16ch をミックスダウンした音声）
+	};
+
+	using monitoringCallback_t = void (*)(
+			short* buffer,
+			size_t buflen,
 			void* userdata);
 }
 
