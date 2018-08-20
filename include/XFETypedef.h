@@ -54,12 +54,8 @@ namespace mimixfe
 			microphoneUsage_[16] = MicrophoneUsage::REFERENCE;
 			microphoneUsage_[17] = MicrophoneUsage::REFERENCE;
 		}
-
 		int samplingrate_ = 16000; // !< 出力サンプリングレート
 		MicrophoneUsage microphoneUsage_[18]; // !< マイクの個別設定
-
-		//@TODO TODO 開発用（リリース時に消すこと）
-		int channels_ = 18;
 	};
 
 	class DLL_PUBLIC XFEVADConfig
@@ -85,7 +81,7 @@ namespace mimixfe
 			Fast,     //!< 高速だが後段認識器に若干の悪影響を与える可能性がある
 		};
 		bool enable_ = true;
-		Preference pref_ = Preference::Fast;
+		Preference pref_ = Preference::Balanced;
 		bool aesEnable_ = false;
 		double aesRatio_ = 1.0;
 	};
@@ -231,11 +227,20 @@ namespace mimixfe
 			size_t infolen,
 			void* userdata);
 
-	enum class DLL_PUBLIC MonitoringType
+	enum class DLL_PUBLIC MonitoringAudioType
 	{
-		RAW, //!< 48k, 18ch 音声
-		ECD16CH, //!< 16k, 16ch, エコーキャンセル済音声
-		ECD1CH //!< 16k, 1ch 音声（16ch をミックスダウンした音声）
+		S48kC18,  //!< サンプリングレート 48k, 18ch 音声
+		S48kC1,   //!< サンプリングレート 48k,  1ch 音声（16ch を 1ch にミックスダウン）
+		S16kC18,  //!< サンプリングレート 16k, 18ch 音声
+		S16kC16EC,//!< サンプリングレート 16k, 16ch, エコーキャンセル済音声
+		S16kC1EC  //!< サンプリングレート 16k,  1ch, エコーキャンセル済音声（16ch を 1ch にミックスダウン）
+	};
+
+	enum class DLL_PUBLIC MonitoringAudioCodec
+	{
+		RAWPCM, //!< RAW PCM 16bit 無圧縮音声
+		FLAC,   //!< FLAC 可逆圧縮音声
+		SPEEX,  //!< SPEEX 不可逆圧縮音声
 	};
 
 	using monitoringCallback_t = void (*)(
