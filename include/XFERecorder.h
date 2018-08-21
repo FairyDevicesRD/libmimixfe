@@ -74,17 +74,13 @@ namespace mimixfe
 		/**
 		 * @brief モニタリングコールバックを設定（追加）する
 		 * @details 異なる MonitoringType の複数のモニタリングコールバックを設定することができる。モニタリングコールバック指定はオプション。
-		 * @param [in] monitoringCallback モニタリングコールバック関数
+		 * @param [in] callback モニタリングコールバック関数
 		 * @param [in] type モニタリングタイプ（モニタリングコールバックに与えられる音声の種類を指定する）
 		 * @param [in] type モニタリングタイプ（モニタリングコールバックに与えられる音声の圧縮形式を指定する）
-		 * @return モニタリングコールバック ID
+		 * @param [in] userdata 任意データ
+		 * @return true if success
 		 */
-		int addMonitoringCallback(monitoringCallback_t monitoringCallback, MonitoringAudioType type, MonitoringAudioCodec codec);
-
-		/**
-		 * @brief 指定した ID のモニタリングコールバックを削除する
-		 */
-		void delMonitoringCallback(int id);
+		bool addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, MonitoringAudioCodec codec, void* userdata);
 
 		/**
 		 * @brief XFE に LED 制御権を与える。デフォルトでは XFE は LED 制御権を持ち、音源検出時に検出方向を光らせる。

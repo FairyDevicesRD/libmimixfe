@@ -53,6 +53,12 @@ void recorderCallback(
   }
 }
 
+void monitoringCallback(const short* buffer, size_t buflen, void* userdata)
+{
+	  UserData *p = reinterpret_cast<UserData*>(userdata);
+	  fwrite(buffer, sizeof(short), buflen, p->file_);
+}
+
 int main(int argc, char** argv)
 {
 	 // XFE の実行
@@ -61,15 +67,20 @@ int main(int argc, char** argv)
 	 XFEECConfig e;
 	 XFEVADConfig v;
 	 XFEBeamformerConfig b;
-	 XFEStaticLocalizerConfig c({Direction(270, 90), Direction(90, 90), Direction(0,90)});
+	 XFEStaticLocalizerConfig c({Direction(270, 90)});
 	 //c.area_ = XFELocalizerConfig::SearchArea::sphere;
 	 //c.maxSimultaneousSpeakers_ = 1;
-	 UserData data;
-	 data.file_ = fopen("/tmp/debug_ex1.raw","w");
+	 UserData data1;
+	 data1.file_ = fopen("/tmp/ex1.raw","w");
+
+	 UserData data2;
+	 data2.file_ = fopen("/tmp/monitor_ex1.raw","w");
+
 	 int return_status = 0;
 	 try{
-		XFERecorder rec(s,e,v,b,c,recorderCallback,reinterpret_cast<void*>(&data));
+		XFERecorder rec(s,e,v,b,c,recorderCallback,reinterpret_cast<void*>(&data1));
 		rec.setLogLevel(LOG_UPTO(LOG_DEBUG)); // デバッグレベルのログから出力する
+		rec.addMonitoringCallback(monitoringCallback, MonitoringAudioType::S16kC1EC, MonitoringAudioCodec::RAWPCM, reinterpret_cast<void*>(&data2));
 		rec.start();
 		int countup = 0;
 		int timeout = 120;
@@ -86,7 +97,8 @@ int main(int argc, char** argv)
 	 }catch(const std::exception& e){
 		std::cerr << "Exception: " << e.what() << std::endl;
 	 }
-	 fclose(data.file_);
+	 fclose(data1.file_);
+	 fclose(data2.file_);
 	 if(return_status != 0){
 		 std::cerr << "Abort by error code = " << return_status << std::endl;
 	 }

@@ -244,7 +244,7 @@ namespace mimixfe
 	};
 
 	using monitoringCallback_t = void (*)(
-			short* buffer,
+			const short* buffer,
 			size_t buflen,
 			void* userdata);
 }
