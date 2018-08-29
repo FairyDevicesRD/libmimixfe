@@ -62,10 +62,10 @@ namespace mimixfe
 	{
 	public:
 		bool enable_ = true;
-		int timeToActive_ = 100;    //!< 発話開始判定に必要な長さ[ms]
-		int timeToInactive_ = 600;  //!< 発話終了判定に必要な長さ[ms]
-		int headPaddingTime_ = 400; //!< 切り出される発話区間先頭側を延長する長さ[ms]
-		int tailPaddingTime_ = 400; //!< 切り出される発話区間末尾側を延長する長さ[ms]
+		int timeToActive_ = 80;    //!< 発話開始判定に必要な長さ[ms]
+		int timeToInactive_ = 800;  //!< 発話終了判定に必要な長さ[ms]
+		int headPaddingTime_ = 600; //!< 切り出される発話区間先頭側を延長する長さ[ms]
+		int tailPaddingTime_ = 600; //!< 切り出される発話区間末尾側を延長する長さ[ms]
 		int dbfsThreshold_ = -96;   //!< 発話判定に必要な最低音量閾値[dbfs]
 
 		//@TODO TODO 開発用（リリース時に消すこと）
