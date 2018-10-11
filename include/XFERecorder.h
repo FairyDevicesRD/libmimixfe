@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <syslog.h>
+#include <tumbler/ledring.h>
 #include "XFETypedef.h"
 
 namespace mimixfe
@@ -42,6 +43,7 @@ namespace mimixfe
 				const XFEVADConfig& vadConfig,
 				const XFEBeamformerConfig& bfConfig,
 				const XFELocalizerConfig& locConfig,
+				const XFEOutputConfig& outConfig,
 				recorderCallback_t recorderCallback,
 				void *userdata);
 		virtual ~XFERecorder();
@@ -69,6 +71,37 @@ namespace mimixfe
 		 * 内部エラーによって例外が送出されたときに無効になる。
 		 */
 		bool isActive() const;
+
+		/**
+		 * @brief モニタリングコールバックを設定（追加）する
+		 * @details 異なる MonitoringType の複数のモニタリングコールバックを設定することができる。モニタリングコールバック指定はオプション。
+		 * @param [in] callback モニタリングコールバック関数
+		 * @param [in] type モニタリングタイプ（モニタリングコールバックに与えられる音声の種類を指定する）
+		 * @param [in] type モニタリングタイプ（モニタリングコールバックに与えられる音声の圧縮形式を指定する）
+		 * @param [in] userdata 任意データ
+		 * @return true if success
+		 */
+		bool addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, AudioCodec codec, void* userdata);
+
+		/**
+		 * @brief XFE に LED 制御権を与える。デフォルトでは XFE は LED 制御権を持ち、音源検出時に検出方向を光らせる。
+		 * @param [in] enable true の場合 XFE に LED 制御権を保持させる。false の場合、制御権を放棄させる。
+		 * @note LED 制御は外部ライブラリの libtumbler を用いて行われている。
+		 */
+		void controlLED(bool enable);
+
+		/**
+		 * @brief XFE が LED 制御権を保持しているかどうかを返す
+		 * @return true if XFE has LED control, false if XFE doesn't have one
+		 */
+		bool controlLED() const;
+
+		/**
+		 * @brief XFE の音源検出時の LED リングの色を指定する
+		 * @param [in] foreground 音源方向の点灯色（デフォルトでは LED(0,0,55)）
+		 * @param [in] background それ以外の方向の点灯色（デフォルトでは LED(38,38,38)）
+		 */
+		void setLEDColor(tumbler::LED foreground, tumbler::LED background);
 
 	private:
 		std::unique_ptr<XFERecorderImpl> recorderImpl_;

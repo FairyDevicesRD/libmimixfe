@@ -1,6 +1,10 @@
 # libmimixfe
 mimi XFE module for Fairy I/O Tumbler
 
+## Version 1.0 Preview について
+
+Version 1.0 は下位互換性の無い API 変更となるため、Preview 版を先に公開します。本 Preview 版は各部の調整中であり、master と比較して性能が劣る部分があります。
+
 ## はじめに
 
 ### 概要
@@ -58,6 +62,7 @@ XFERecorder::XFERecorder(
 	const XFEVADConfig& vadConfig,
 	const XFEBeamformerConfig& bfConfig,
 	const XFELocalizerConfig& locConfig,
+	const XFEOutputConfig& outConfig,
 	recorderCallback_t recorderCallback,
 	void *userdata);
 ``````````
@@ -143,8 +148,8 @@ const std::string XFERecorderError::errorstr()
 
 |変数名|初期値|単位／型|説明|
 |---|---|---|---|
-|samplingrate_|16000|Hz|libmimixfe の信号処理パイプラインに導入する音声のサンプリングレート。現在は 16000 以外対応していません。|
-|microphoneUsage_[18]|ヘッダファイル参照|MicrophoneUsage型|マイクの利用用途。どのマイクを録音用とし、どのマイクを参照用とし、どのマイクを単に無視するかを設定できる。これによって、少ないマイク数、例えば 4ch や 8ch のみを用いた試行を行うことができるが、現在は、初期値以外未対応。|
+|samplingrate_|16000|Hz|libmimixfe の信号処理パイプラインに導入する音声のサンプリングレート。16000 のみの対応となります。|
+|microphoneUsage_[18]|ヘッダファイル参照|MicrophoneUsage型|マイクの利用用途。どのマイクを録音用とし、どのマイクを参照用とし、どのマイクを単に無視するかの設定。初期値のみの対応となります。|
 
 #### XFEVadConfig クラス
 
@@ -153,11 +158,11 @@ const std::string XFERecorderError::errorstr()
 |変数名|初期値|単位／型|説明|
 |---|---|---|---|
 |enable_|true|bool型|VAD を有効にするかどうか|
-|timeToActive_|60|ミリ秒|VAD によって、発話開始であると判定される最短の長さ。これが短い方が、より敏速に発話開始判定を得られるが、短すぎるとゴミを拾う場合がある。|
+|timeToActive_|80|ミリ秒|VAD によって、発話開始であると判定される最短の長さ。これが短い方が、より敏速に発話開始判定を得られるが、短すぎるとゴミを拾う場合がある。|
 |timeToInactive|800|ミリ秒|VAD によって、発話終了であると判定される最短の長さ。これが短い方が、より敏速に発話終了判定を得られるが、短すぎると発話途中で切られる場合がある|
-|headPaddingTime_|600|ミリ秒|VAD が発話検出区間を切り出す際に、発話検出区間の前方に与えるマージン。これが長い方が誤判定に対してロバストになるが、無駄な非発話区間をサーバーに送ることになる。その事自体は、サーバー側に悪影響を与えないが、従量課金の場合コストデメリットがある|
-|tailPaddingTime_|600|ミリ秒|VAD が発話検出区間を切り出す際に、発話検出区間の後方に与えるマージン。これが長い方が誤判定に対してロバストになるが、無駄な非発話区間をサーバーに送ることになる。その事自体は、サーバー側に悪影響を与えないが、従量課金の場合コストデメリットがある|
-|rmsThreshold_|100|無単位の相対値（int型）|一定音量以下の音量の場合に、VAD による判定自体を行わない閾値。0 を与えた場合、閾値を持たない。|
+|headPaddingTime_|400|ミリ秒|VAD が発話検出区間を切り出す際に、発話検出区間の前方に与えるマージン。これが長い方が誤判定に対してロバストになるが、無駄な非発話区間をサーバーに送ることになる。その事自体は、サーバー側に悪影響を与えないが、従量課金の場合コストデメリットがある|
+|tailPaddingTime_|400|ミリ秒|VAD が発話検出区間を切り出す際に、発話検出区間の後方に与えるマージン。これが長い方が誤判定に対してロバストになるが、無駄な非発話区間をサーバーに送ることになる。その事自体は、サーバー側に悪影響を与えないが、従量課金の場合コストデメリットがある|
+|rmsDbfs_|-96|dbFS|VAD による発話判定を行うために必要な最低音量[dbFS]|
 
 #### XFEECConfig クラス
 
@@ -203,7 +208,7 @@ libmimixfe では、多チャンネル音声信号を利用した目的音声信
 |enable_|true|bool型|BF を有効にするかどうか|
 |type_|type::MVDR_v2|XFEBeamformerConfig::type型|ビームフォーミングの内部処理の種類。内部処理詳細は一般には開示されていません。|
 |sensitibity_|1.0|float型|-|
-|postfilter_enable_|true|bool型|ポストフィルター処理実行の有無。追加的なノイズ抑制ができるが、出力音声に若干の歪みを与える副作用がある。|
+|postfilter_enable_|true|bool型|ポストフィルター処理実行の有無。追加的な音声強調ができるが、出力音声に若干の歪みを与える副作用がある。|
 
 #### XFEStaticLocalizerConfig クラス
 
@@ -217,10 +222,16 @@ libmimixfe では、多チャンネル音声信号を利用した目的音声信
 |変数名|初期値|単位／型|説明|
 |---|---|---|---|
 |targetDirections_|なし|std::vector<Direction>|Direction型変数のベクタによって１つ以上の目的方向を指定します。本クラスのコンストラクタで指定することもできます。|
+|maxSimultaneousSpeakers|1|int|同時に定位する最大音源数。1 もしくは 2 が指定できます。`targetDirections_` の個数以下である必要があります。|
+|area_|SearchArea::planar|SearchArea 型|音源を定位する範囲。planar の場合は平面、sphere の場合は球面。一般的な利用方法においては平面を推奨します。|
 	
 #### XFEDynamicLocalizerConfig クラス
 
 派生クラスのうち、この設定データクラスは、ビームフォーマーの目的方向を音源方向に向ける際に利用します。
+
+#### XFEOutputConfig
+
+v1.0 から追加された recorderCallback の呼び出され方を制御する設定データクラス。デフォルトのまま利用することが推奨されます。
 
 #### StreamInfo クラス
 
@@ -229,15 +240,14 @@ libmimixfe では、多チャンネル音声信号を利用した目的音声信
 |変数名|単位／型|説明|
 |---|---|---|
 |milliseconds_|ミリ秒|libmimixfe が録音を開始してからの経過時間。録音開始時刻を 0 としたときに、取得された音声バッファの録音時刻に相当。|
-|rms_|相対値|平均音量|
-|soundSourceDetected_|bool型|この 10 ミリ秒フレームで有効な音源が存在するかどうか。ビームフォーマーが無効の場合未定義|
 |direction_|Direction型|この 10 ミリ秒フレームで有効な音源が検出された場合、その推定方向。ビームフォーマーが無効の場合未定義|
+|utteranceDirection_|Direction型|発話単位での推定方向。ビームフォーマーが無効の場合未定義|
 |speechProbability_|[0,1.0]|この 10 ミリ秒フレーム全体での発話存在確率。VAD が無効の場合未定義|
-|extractedSoundSources_|個数|この 10 ミリ秒フレームで、実際に抽出された同時発生音源数。ユーザー定義コールバック関数が異なる音源番号で呼び出される|
-|estimatedSoundSources_|個数|この 10 ミリ秒フレームで、推定された全同時発生音源数|
-|f0_|Hz|この 10 ミリ秒フレームの F0 推定値|
-|f1_|Hz|この 10 ミリ秒フレームの F1 推定値|
-|f2_|Hz|この 10 ミリ秒フレームの F2 推定値|
+|rmsDbfs_|dbFS|平均音量|
+|numSoundSources_|個数|この 10 ミリ秒フレームで、実際に抽出された同時発生音源数。ユーザー定義コールバック関数が異なる音源番号で呼び出される|
+|totalNumSoundSources_|個数|この 10 ミリ秒フレームでの推定同時発生音源数。|
+|spatialSpectralPeak|dbFS|空間スペクトル値|
+|spatialSpectrum|dbFS|平均空間スペクトル|
 
 #### Direction クラス
 

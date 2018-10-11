@@ -11,6 +11,7 @@
 #define DLL_LOCAL  __attribute__ ((visibility ("hidden")))
 
 #include <vector>
+#include <initializer_list>
 #include <stddef.h>
 
 namespace mimixfe
@@ -39,6 +40,17 @@ namespace mimixfe
 	};
 
 	/**
+	 * @enum 音声コーデック
+	 * @class AudioCodec
+	 */
+	enum class DLL_PUBLIC AudioCodec
+	{
+		RAWPCM, //!< RAW PCM 16bit 無圧縮音声
+		FLAC,   //!< FLAC 可逆圧縮音声
+		SPEEX,  //!< SPEEX 不可逆圧縮音声
+	};
+
+	/**
 	 * @class 音源の設定
 	 * @brief 出力サンプリングレート、入力チャネルの設定。入力チャネルは 18 チャネル全てを設定しなければならない。
 	 */
@@ -53,9 +65,7 @@ namespace mimixfe
 			microphoneUsage_[16] = MicrophoneUsage::REFERENCE;
 			microphoneUsage_[17] = MicrophoneUsage::REFERENCE;
 		}
-
 		int samplingrate_ = 16000; // !< 出力サンプリングレート
-		int channels_ = 18;
 		MicrophoneUsage microphoneUsage_[18]; // !< マイクの個別設定
 	};
 
@@ -63,11 +73,11 @@ namespace mimixfe
 	{
 	public:
 		bool enable_ = true;
-		int timeToActive_ = 80;
-		int timeToInactive_ = 800;
-		int headPaddingTime_ = 600;
-		int tailPaddingTime_ = 600;
-		int rmsThreshold_ = 100;
+		int timeToActive_ = 80;    //!< 発話開始判定に必要な長さ[ms]
+		int timeToInactive_ = 800;  //!< 発話終了判定に必要な長さ[ms]
+		int headPaddingTime_ = 400; //!< 切り出される発話区間先頭側を延長する長さ[ms]
+		int tailPaddingTime_ = 400; //!< 切り出される発話区間末尾側を延長する長さ[ms]
+		int dbfsThreshold_ = -96;   //!< 発話判定に必要な最低音量閾値[dbfs]
 	};
 
 	class DLL_PUBLIC XFEECConfig
@@ -79,7 +89,7 @@ namespace mimixfe
 			Fast,     //!< 高速だが後段認識器に若干の悪影響を与える可能性がある
 		};
 		bool enable_ = true;
-		Preference pref_ = Preference::Fast;
+		Preference pref_ = Preference::Balanced;
 		bool aesEnable_ = false;
 		double aesRatio_ = 1.0;
 	};
@@ -156,27 +166,30 @@ namespace mimixfe
 		 */
 		enum class DLL_PUBLIC SearchArea
 		{
-			planar, //!< 本機を中心に置く水平面への射影に限定する。azimuth は 90 度に固定され、angle のみ 0,360 を取る。
+			planar, //!< 本機を中心に置く水平面への射影に限定する。azimuth は 90 度に固定され、angle のみ [0,360] を取る。
 			sphere, //!< 本機を中心に置く球。azimuth, angle 共に探索対象となる。planar_ と比較し、処理が重くなる。
 		};
 		virtual ~XFELocalizerConfig(){}
 		bool enable_ = true; //!< ローカライザモジュールの有効無効の指定
 		LocalizerType type_;
 		SearchArea area_ = SearchArea::planar; //!< 音源探索領域の指定
+		float sourceDetectionSensitibity_; //!< 音源検出の感度 [0,1] 区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を下げると偽音源が検出される場合がある。
 	protected:
 		XFELocalizerConfig(LocalizerType type) : type_(type){}
 	};
 	/**
 	 * @class XFEStaticLocalizerConfig
-	 * @brief 設定で固定された方向のみの音声を取得する（固定ビームフォーミング）
+	 * @brief 設定で固定された方向のみの音声を取得する
 	 */
 	class DLL_PUBLIC XFEStaticLocalizerConfig : public XFELocalizerConfig
 	{
 	public:
 		XFEStaticLocalizerConfig(std::initializer_list<Direction> directions) :
 			XFELocalizerConfig(LocalizerType::staticLocalizer),
-			targetDirections_(directions.begin(), directions.end()){}
+			targetDirections_(directions.begin(), directions.end()),
+			maxSimultaneousSpeakers_(1){}
 		std::vector<Direction> targetDirections_;
+		int maxSimultaneousSpeakers_; //!< 同時定位する最大音源数。指定方向数以下である必要がある。
 	};
 
 	/**
@@ -188,10 +201,27 @@ namespace mimixfe
 	public:
 		XFEDynamicLocalizerConfig() :
 			XFELocalizerConfig(LocalizerType::dynamicLocalizer),
-			maxSimultaneousSpeakers_(1) {}
+			maxSimultaneousSpeakers_(1),
+			identicalRange_(20){}
 
 		int maxSimultaneousSpeakers_; //!< 同時定位する最大音源数。推定音源数が最大音源数に満たない場合、推定音源のみ出力される。
+		int identicalRange_; //!< 同時定位する場合に、指定角度以下を同一音源とみなす角度
 		std::vector<Sector> sectorsForIgnore_; //!< 平面無視領域
+	};
+
+	/**
+	 * @class XFEOutputConfig
+	 * @brief 出力の設定
+	 */
+	class DLL_PUBLIC XFEOutputConfig
+	{
+	public:
+		enum class outputType{
+			allFrames,   //!< 全ての入力フレームに対応する区間が出力される。出力対象音声がない場合も、ストリーム情報が出力される
+			audioFrames, //!< 出力対象音声がある区間のみ出力される（互換）
+		};
+		outputType type_ = outputType::audioFrames; //!< コールバック関数が呼ばれるタイミング
+		AudioCodec codec_; //!< 出力音声コーデック
 	};
 
 	/**
@@ -201,16 +231,15 @@ namespace mimixfe
 	class DLL_PUBLIC StreamInfo
 	{
 	public:
-		int milliseconds_; // !< 経過時間[ms]
-		float rms_; // !< 平均音量[rms]
-		bool soundSourceDetected_; // !< 音源が定位されたかどうか
-		Direction direction_; // !< 推定音源方向
-		float speechProbability_; // !< 発話存在確率
-		int extractedSoundSources_; // !< 抽出された同時発生音源数（実際にコールバック関数で出力される）
-		int estimatedSoundSources_; // !< 推定された同時発生音源数
-		float f0_; // !< F0
-		float f1_; // !< F1
-		float f2_; // !< F2
+		unsigned long long milliseconds_; // !< 経過時間[ms]
+		Direction direction_; // !< 現在入力フレームの推定方向
+		Direction utteranceDirection_; //!< 発話単位での推定方向（固定方向設定の場合は、設定方向の一）
+		float speechProbability_; // !< 発話存在確率[0,1]
+		float rmsDbfs_; // !< 平均音量[dbfs]
+		int numSoundSources_; //!< 抽出された音源数
+		int totalNumSoundSources_; //!< 検出された音源数
+		float spatialSpectralPeak_; //!< 空間スペクトル値[db]
+		std::vector<float> spatialSpectrum_; //!< 平均空間スペクトル[db]
 	};
 
 	using recorderCallback_t = void (*)(
@@ -220,6 +249,20 @@ namespace mimixfe
 			int sourceId,
 			StreamInfo* info,
 			size_t infolen,
+			void* userdata);
+
+	enum class DLL_PUBLIC MonitoringAudioType
+	{
+		S48kC18,  //!< サンプリングレート 48k, 18ch 音声
+		S48kC1,   //!< サンプリングレート 48k,  1ch 音声（16ch を 1ch にミックスダウン）
+		S16kC18,  //!< サンプリングレート 16k, 18ch 音声
+		S16kC16EC,//!< サンプリングレート 16k, 16ch, エコーキャンセル済音声
+		S16kC1EC  //!< サンプリングレート 16k,  1ch, エコーキャンセル済音声（16ch を 1ch にミックスダウン）
+	};
+
+	using monitoringCallback_t = void (*)(
+			const short* buffer,
+			size_t buflen,
 			void* userdata);
 }
 
