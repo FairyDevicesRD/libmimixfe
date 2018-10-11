@@ -43,6 +43,7 @@ namespace mimixfe
 				const XFEVADConfig& vadConfig,
 				const XFEBeamformerConfig& bfConfig,
 				const XFELocalizerConfig& locConfig,
+				const XFEOutputConfig& outConfig,
 				recorderCallback_t recorderCallback,
 				void *userdata);
 		virtual ~XFERecorder();
@@ -80,7 +81,7 @@ namespace mimixfe
 		 * @param [in] userdata 任意データ
 		 * @return true if success
 		 */
-		bool addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, MonitoringAudioCodec codec, void* userdata);
+		bool addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, AudioCodec codec, void* userdata);
 
 		/**
 		 * @brief XFE に LED 制御権を与える。デフォルトでは XFE は LED 制御権を持ち、音源検出時に検出方向を光らせる。
