@@ -1,9 +1,5 @@
 # libmimixfe
-mimi XFE module for Fairy I/O Tumbler
-
-## Version 1.0 Preview について
-
-Version 1.0 は下位互換性の無い API 変更となるため、Preview 版を先に公開します。本 Preview 版は各部の調整中であり、master と比較して性能が劣る部分があります。
+mimi XFE module for Fairy I/O Tumbler / version 1.x
 
 ## はじめに
 
