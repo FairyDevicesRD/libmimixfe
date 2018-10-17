@@ -73,10 +73,10 @@ namespace mimixfe
 	{
 	public:
 		bool enable_ = true;
-		int timeToActive_ = 80;    //!< 発話開始判定に必要な長さ[ms]
+		int timeToActive_ = 120;    //!< 発話開始判定に必要な長さ[ms]
 		int timeToInactive_ = 800;  //!< 発話終了判定に必要な長さ[ms]
-		int headPaddingTime_ = 400; //!< 切り出される発話区間先頭側を延長する長さ[ms]
-		int tailPaddingTime_ = 400; //!< 切り出される発話区間末尾側を延長する長さ[ms]
+		int headPaddingTime_ = 600; //!< 切り出される発話区間先頭側を延長する長さ[ms]
+		int tailPaddingTime_ = 600; //!< 切り出される発話区間末尾側を延長する長さ[ms]
 		int dbfsThreshold_ = -96;   //!< 発話判定に必要な最低音量閾値[dbfs]
 	};
 
@@ -173,7 +173,7 @@ namespace mimixfe
 		bool enable_ = true; //!< ローカライザモジュールの有効無効の指定
 		LocalizerType type_;
 		SearchArea area_ = SearchArea::planar; //!< 音源探索領域の指定
-		float sourceDetectionSensitibity_; //!< 音源検出の感度 [0,1] 区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を下げると偽音源が検出される場合がある。
+		int maxSimultaneousSpeakers_ = 1; //!< 同時定位する最大音源数
 	protected:
 		XFELocalizerConfig(LocalizerType type) : type_(type){}
 	};
@@ -186,10 +186,8 @@ namespace mimixfe
 	public:
 		XFEStaticLocalizerConfig(std::initializer_list<Direction> directions) :
 			XFELocalizerConfig(LocalizerType::staticLocalizer),
-			targetDirections_(directions.begin(), directions.end()),
-			maxSimultaneousSpeakers_(1){}
+			targetDirections_(directions.begin(), directions.end()){}
 		std::vector<Direction> targetDirections_;
-		int maxSimultaneousSpeakers_; //!< 同時定位する最大音源数。指定方向数以下である必要がある。
 	};
 
 	/**
@@ -201,11 +199,11 @@ namespace mimixfe
 	public:
 		XFEDynamicLocalizerConfig() :
 			XFELocalizerConfig(LocalizerType::dynamicLocalizer),
-			maxSimultaneousSpeakers_(1),
-			identicalRange_(20){}
+			identicalRange_(30),
+			sourceDetectionSensitibity_(0.4){}
 
-		int maxSimultaneousSpeakers_; //!< 同時定位する最大音源数。推定音源数が最大音源数に満たない場合、推定音源のみ出力される。
 		int identicalRange_; //!< 同時定位する場合に、指定角度以下を同一音源とみなす角度
+		float sourceDetectionSensitibity_; //!< 同時定位する場合の、複数音源検出の感度[0,1]区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を上げると偽音源が検出される場合がある。
 		std::vector<Sector> sectorsForIgnore_; //!< 平面無視領域
 	};
 
@@ -232,9 +230,9 @@ namespace mimixfe
 	{
 	public:
 		unsigned long long milliseconds_; // !< 経過時間[ms]
-		Direction direction_; // !< 現在入力フレームの推定方向
+		Direction direction_; // !< 10msec フレームの推定方向
 		Direction utteranceDirection_; //!< 発話単位での推定方向（固定方向設定の場合は、設定方向の一）
-		float speechProbability_; // !< 発話存在確率[0,1]
+		float speechProbability_; // !< 10msec フレームの発話存在確率[0,1]
 		float rmsDbfs_; // !< 平均音量[dbfs]
 		int numSoundSources_; //!< 抽出された音源数
 		int totalNumSoundSources_; //!< 検出された音源数
