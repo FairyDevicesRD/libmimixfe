@@ -174,6 +174,7 @@ namespace mimixfe
 		LocalizerType type_;
 		SearchArea area_ = SearchArea::planar; //!< 音源探索領域の指定
 		int maxSimultaneousSpeakers_ = 1; //!< 同時定位する最大音源数
+		float sourceDetectionSensitibity_ = 0.4; //!< 同時定位する場合の、複数音源検出の感度[0,1]区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を上げると偽音源が検出される場合がある。
 	protected:
 		XFELocalizerConfig(LocalizerType type) : type_(type){}
 	};
@@ -199,11 +200,9 @@ namespace mimixfe
 	public:
 		XFEDynamicLocalizerConfig() :
 			XFELocalizerConfig(LocalizerType::dynamicLocalizer),
-			identicalRange_(30),
-			sourceDetectionSensitibity_(0.4){}
+			identicalRange_(30){}
 
 		int identicalRange_; //!< 同時定位する場合に、指定角度以下を同一音源とみなす角度
-		float sourceDetectionSensitibity_; //!< 同時定位する場合の、複数音源検出の感度[0,1]区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を上げると偽音源が検出される場合がある。
 		std::vector<Sector> sectorsForIgnore_; //!< 平面無視領域
 	};
 
