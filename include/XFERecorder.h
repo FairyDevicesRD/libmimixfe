@@ -12,8 +12,9 @@
 #include <memory>
 #include <stdexcept>
 #include <sstream>
-#include <syslog.h>
+#ifdef FIO_T01
 #include <tumbler/ledring.h>
+#endif
 #include "XFETypedef.h"
 
 namespace mimixfe
@@ -83,6 +84,7 @@ namespace mimixfe
 		 */
 		bool addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, AudioCodec codec, void* userdata);
 
+#ifdef FIO_T01
 		/**
 		 * @brief XFE に LED 制御権を与える。デフォルトでは XFE は LED 制御権を持ち、音源検出時に検出方向を光らせる。
 		 * @param [in] enable true の場合 XFE に LED 制御権を保持させる。false の場合、制御権を放棄させる。
@@ -102,6 +104,7 @@ namespace mimixfe
 		 * @param [in] background それ以外の方向の点灯色（デフォルトでは LED(38,38,38)）
 		 */
 		void setLEDColor(tumbler::LED foreground, tumbler::LED background);
+#endif
 
 	private:
 		std::unique_ptr<XFERecorderImpl> recorderImpl_;

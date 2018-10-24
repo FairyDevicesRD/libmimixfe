@@ -73,9 +73,9 @@ int main(int argc, char** argv)
 	}
 	using namespace mimixfe;
 	XFESourceConfig s;
+
 	XFEECConfig e;
 	XFEVADConfig v;
-	v.timeToInactive_ = 1000;
 	XFEBeamformerConfig b;
 	XFEStaticLocalizerConfig c({Direction(270, 90)});
 	XFEOutputConfig o;
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 		rec.addMonitoringCallback(monitoringCallback, MonitoringAudioType::S16kC1EC, AudioCodec::RAWPCM, reinterpret_cast<void*>(&data2));
 		rec.start();
 		int countup = 0;
-		int timeout = 120;
+		int timeout = 10;
 		while(rec.isActive()){
 			std::cout << countup++  << " / " << timeout << std::endl;
 			if(countup == timeout){
@@ -112,12 +112,12 @@ int main(int argc, char** argv)
 	 }catch(const std::exception& e){
 		std::cerr << "Exception: " << e.what() << std::endl;
 	 }
-	 fclose(data1.file_);
-	 fclose(data2.file_);
 	 if(return_status != 0){
 		 std::cerr << "Abort by error code = " << return_status << std::endl;
 	 }else{
 		 std::cout << "Normally finished" << std::endl;
 	 }
+	 fclose(data1.file_);
+	 fclose(data2.file_);
 	 return return_status;
 }

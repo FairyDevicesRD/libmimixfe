@@ -79,6 +79,7 @@ int main(int argc, char** argv)
 	}
 	using namespace mimixfe;
 	XFESourceConfig s;
+
 	XFEECConfig e;
 	XFEVADConfig v;
 	XFEBeamformerConfig b;
