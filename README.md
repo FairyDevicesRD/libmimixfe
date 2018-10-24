@@ -7,11 +7,14 @@ mimi XFE module for Fairy I/O Tumbler / version 1.x
 
 T-01 用バイナリとして提供される libmimixfe.so とそのヘッダファイル、及び簡単な利用例を含むリポジトリです。 `include/` 以下にヘッダファイル、`lib/` 以下に libmimixfe.so 本体、`examples` 以下に利用例のソースコードが含まれます。利用例は、説明のための実装であり、プロダクション用の実装には好適ではない場合があります。
 
+### ライブラリ本体
+
+[リリース](https://github.com/FairyDevicesRD/libmimixfe/releases) に各バージョンのライブラリが格納されています。1.0.2 からソースレポジトリには同梱しなくなりましたのでご留意ください。
+
 ### 依存ライブラリ
 
 LED リングの制御のために libtumbler.so が必要です。
 https://github.com/FairyDevicesRD/tumbler/tree/master/libtumbler
-
 
 ### 利用例のビルド
 
@@ -22,7 +25,7 @@ $ cd examples
 $ make
 ``````````
 
-適宜同梱の lixmimife.so 及び上記 libtumbler.so とリンクして実行してください。いくつかの利用例は `sudo` を必要とします。
+適宜リリースに格納されている lixmimife.so 及び上記 libtumbler.so とリンクして実行してください。いくつかの利用例は `sudo` を必要とします。
 
 ## libmimixfe API
 
