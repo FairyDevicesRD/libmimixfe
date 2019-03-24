@@ -80,9 +80,16 @@ namespace mimixfe
 		 * @param [in] type モニタリングタイプ（モニタリングコールバックに与えられる音声の種類を指定する）
 		 * @param [in] type モニタリングタイプ（モニタリングコールバックに与えられる音声の圧縮形式を指定する）
 		 * @param [in] userdata 任意データ
-		 * @return true if success
+		 * @return 成功した場合、モニタリングコールバック関数番号（0 以上の整数）が帰る。失敗した場合、負の数となる。
 		 */
-		bool addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, AudioCodec codec, void* userdata);
+		int addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, AudioCodec codec, void* userdata);
+
+		/**
+		 * @brief 設定されたモニタリングコールバック関数を削除する
+		 * @param [in] id モニタリングコールバック関数番号。addMonitoringCallback() 関数の戻り値。
+		 * @return 成功した場合、削除されたモニタリングコールバック関数番号（引数の値）が帰る。失敗した場合、負の数となる。
+		 */
+		int delMonitoringCallback(int id);
 
 #ifdef FIO_T01
 		/**
