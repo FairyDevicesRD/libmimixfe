@@ -111,6 +111,13 @@ namespace mimixfe
 		 * @param [in] background それ以外の方向の点灯色（デフォルトでは LED(38,38,38)）
 		 */
 		void setLEDColor(tumbler::LED foreground, tumbler::LED background);
+
+		/**
+		 * @brief XFE の音源未検出時のフレームを指定する（v1.0.4-rc1 より追加）
+		 * @param [in] frame 音源未検出時の組込アニメーションパターン用の点灯フレーム定義
+		 * @param [in] direction 回転方向（0: 停止、1: 時計回り、2: 反時計回り）
+		 */
+		void setDefaultFrame(const tumbler::Frame& frame, int direction);
 #endif
 
 	private:

@@ -121,6 +121,62 @@ while(rec.isActive()){
 }
 ``````````
 
+##### addMonitoringCallback()
+
+``````````.cpp
+int addMonitoringCallback(monitoringCallback_t callback, MonitoringAudioType type, AudioCodec codec, void* userdata)
+``````````
+
+libmimixfe に対して `monitoringCallback_t` 型のユーザー定義モニタリングコールバック関数をセットすることができます。モニタリングコールバック関数は、libmimixfe によって信号処理された結果が出力される `recorderCallback_t` 型のユーザー定義コールバック関数（後述）とは異なり、libmimixfe が録音した音声そのものを返すコールバック関数です。`recorderCallback_t` 型のコールバック関数は、`XFEReorder` クラスのコンストラクタの必須引数のひとつですが、モニタリングコールバック関数は必須ではないため、本関数を利用して登録した場合のみ有効化されます。本関数の返り値は、モニタリングコールバック関数の番号であり、登録削除する際に利用します。
+
+モニタリングコールバック関数は、全区間の音声をアプリケーション上の要請によって保存しておかなければならない場合などに有効に利用できます。libmimixfe の音声信号処理は多くの場合適切に動作しますが、環境や状況に依存して、所望の音声区間切り出しが得られない場合もあります。このような場合に対して、後からアノテーションを修正する際などに有効に利用することができます。モニタリングコールバック関数は、異なる MonitoringAudioType などを指定して、複数個登録することができますが、通常の場合、複数指定する必要はありません。
+
+第一引数にモニタリングコールバック関数を指定します。第二引数には、後述するモニタリングコールバック関数に渡される音声の種類を指定します。第三引数には、モニタリングコールバック関数に渡される音声コーデックを指定します。第二引数と第三引数については、主要なもの以外については、公開バージョンに依存して利用できないものがあります。
+
+##### delMonitoringCallback()
+
+``````````.cpp
+int delMonitoringCallback(int id)
+``````````
+
+登録されたモニタリングコールバック関数を、関数番号を指定して削除します。削除後は、当該モニタリングコールバック関数が libmimixfe から呼ばれることはありません。
+
+##### controlLED()
+
+``````````.cpp
+void controlLED(bool enable)
+``````````
+
+libmimixfe が LED リングの制御をするかどうかを設定します。デフォルトは true であり、音源検出時に検出方向を点灯させ、音源未検出時には、デフォルトパターンによる LED の右回転が行われます。false を指定した場合、libmimixfe は LED リングに対して一切の操作を行いません。
+
+音源検出時の光り方を変えたいときなどに、本関数を利用して libmimixfe による内蔵 LED 制御を無効にして、`recorderCallback_t`型のユーザー定義コールバック関数内などで、libtumbler を利用して、直接 LED の点灯制御を行うことができます。
+
+##### controlLED()
+
+``````````.cpp
+bool controlLED() const
+``````````
+
+libmimixfe が LED 制御権を保持しているかどうかを返します。
+
+##### setLEDColor()
+
+``````````.cpp
+void setLEDColor(tumbler::LED foreground, tumbler::LED background)
+``````````
+
+音源検出時の LED リングの点灯色を個別に指定します。第一引数の `foreground` は音声検出方向を示すために点灯する LED の点灯色です。第二引数の `background` は、その他の全方向の LED の点灯色です。`tumbler::LED` クラスについては libtumbler のドキュメントを参照してください。色指定値が、`RGB=(0,0,0)` の場合、消灯と同じであることに留意してください。また、複数音源が同時検出された場合には、それらの複数方向が同時に `foreground` 色で点灯することに留意してください。libmimixfe が LED の制御権を保持していない場合は、本関数による指定は意味を持ちません。
+
+##### setDefaultFrame()
+
+``````````.cpp
+void setDefaultFrame(const tumbler::Frame& frame, int direction)
+``````````
+
+音源未検出時の LED リングの点灯パターンを指定します。音源未検出時の LED リングの点灯動作は、LED リングの内部点灯制御を用いるため、単純な回転、もしくは静止パターンしか指定できませんが、libmimixfe のプロセスの存在・不存在に関わらず点灯動作が継続します。このことは、内部的には libtumbler の `LEDRing` クラスの `motion()` 関数を利用することで実現されています。
+
+第一引数は、`motion()` 関数と同様に、１フレームの定義を指定します。第二引数は、当該フレーム定義がどのように動くかを指定します。0 の場合、静止となり、指定したフレーム定義が動かずに表示され続けます。1 の場合、当該フレーム定義が時計回りに回転します。2 の場合、同反時計回りに回転します。
+
 #### XFERecorderError クラス
 
 `XFERecorder` クラスのメンバ関数から送出される可能性のある libmimixfe 定義例外クラスです。本例外が発生した場合には、システムログに `errorstr()` の内容が自動的に記録されます。このクラスは `XFERecorder.h` で定義されています。
@@ -291,19 +347,41 @@ Tumbler T-01 が搭載している 16 個のマイク 1ch のスピーカーフ�
 |INPUT|マイク入力を利用する|
 |REFERENCE|マイク入力を参照音声信号として利用する|
 
+#### AudioCodec 列挙型
+
+音声コーデックを指定します。一部指定はバージョンに依存して無視される場合があります。
+
+|値|説明|
+|---|---|
+|RAWPCM|RAW PCM 16bit 無圧縮音声|
+|FLAC|FLAC 可逆圧縮音声|
+|SPEEX|SPEEX 不可逆圧縮音声|
+
+#### MonitoringAudioType 列挙型
+
+モニタリングコールバック関数に与えられる音声形式を指定するための列挙型です。一部指定はバージョンに応じて未実装である場合があります。
+
+|値|説明|
+|---|---|
+|S48kC18|サンプリングレート 48k, 18ch 音声|
+|S48kC1|サンプリングレート 48k,  1ch 音声（16ch を 1ch にミックスダウン）|
+|S16kC18|サンプリングレート 16k, 18ch 音声|
+|S16kC16EC|サンプリングレート 16k, 16ch, エコーキャンセル済音声|
+|S16kC1EC|サンプリングレート 16k,  1ch, エコーキャンセル済音声（16ch を 1ch にミックスダウン）|
+
 #### recorderCallback_t 型
 
 `XFERecorder` クラスのコンストラクタの引数に与える、ユーザー定義コールバック関数であり、`XFETypedef.h` で定義されています。
 
 ``````````.cpp
 using recorderCallback_t = void (*)(
-	short* buffer,
-	size_t buflen,
-	SpeechState state,
-	int sourceId,
-	StreamInfo* info,
-	size_t infolen,
-	void* userdata);
+      short* buffer,
+      size_t buflen,
+      SpeechState state,
+      int sourceId,
+      StreamInfo* info,
+      size_t infolen,
+      void* userdata);
 ``````````
 
 第一引数には、libmimixfe の出力として、libmimixfe が録音及び設定に従って信号処理をした処理済音声が与えられるバッファです。
@@ -322,4 +400,17 @@ using recorderCallback_t = void (*)(
 
 この関数内部でエラーが発生した場合に、それを明示的に libmimixfe に通知する方法はありません。そのような通知が必要な場合、ユーザー定義データを経由して、メインスレッド側で何らか適切な処理を行うようにしてください。
 
+#### monitoringCallback_t 型
 
+``````````.cpp
+using monitoringCallback_t = void (*)(
+      			   const short* buffer,
+			   	 size_t buflen,
+				 	void* userdata);
+``````````
+
+第一引数には、libmimixfe の出力として、libmimixfe が録音した音声が与えられるバッファです。 `recorderCallback_t` 型のコールバック関数とは異なり、与えられる音声は、`addMonitoringCallback()` 関数で指定された形式のマイクモニタリング音声に限られます。
+
+第二引数は、第一引数に与えられたバッファの長さです。
+
+第三引数は、`addMonitoringCallback()` 関数の最終引数で指定されたユーザー定義型です。
