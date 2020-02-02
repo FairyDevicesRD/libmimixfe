@@ -87,10 +87,10 @@ namespace mimixfe
 	{
 	public:
 		bool enable_ = true;
-		int timeToActive_ = 120;    //!< 発話開始判定に必要な長さ[ms]
+		int timeToActive_ = 200;    //!< 発話開始判定に必要な長さ[ms]
 		int timeToInactive_ = 800;  //!< 発話終了判定に必要な長さ[ms]
-		int headPaddingTime_ = 600; //!< 切り出される発話区間先頭側を延長する長さ[ms]
-		int tailPaddingTime_ = 600; //!< 切り出される発話区間末尾側を延長する長さ[ms]
+		int headPaddingTime_ = 400; //!< 切り出される発話区間先頭側を延長する長さ[ms]
+		int tailPaddingTime_ = 400; //!< 切り出される発話区間末尾側を延長する長さ[ms]
 		int dbfsThreshold_ = -96;   //!< 発話判定に必要な最低音量閾値[dbfs]
 	};
 
@@ -183,13 +183,16 @@ namespace mimixfe
 			planar, //!< 本機を中心に置く水平面への射影に限定する。azimuth は 90 度に固定され、angle のみ [0,360] を取る。
 			sphere, //!< 本機を中心に置く球。azimuth, angle 共に探索対象となる。planar_ と比較し、処理が重くなる。
 		};
+
 		virtual ~XFELocalizerConfig(){}
 		bool enable_ = true; //!< ローカライザモジュールの有効無効の指定
 		LocalizerType type_;
 		SearchArea area_ = SearchArea::planar; //!< 音源探索領域の指定
 		int maxSimultaneousSpeakers_ = 1; //!< 同時定位する最大音源数
-		float sourceDetectionSensitibity_ = 0.4; //!< 同時定位する場合の、複数音源検出の感度[0,1]区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を上げると偽音源が検出される場合がある。
+
+		float sourceDetectionSensitibity_ = 0.4; //!< 同時定位する場合の、複数音源検出の感度[0,1]区間の浮動小数点数（0 のとき感度が低い、1 のとき感度が高い）、感度を上げると偽音源が検出される場合がある。-1 のとき自動推定。
 		int identicalRange_ = 20; //!< 音源定位誤差の半値許容幅（固定方向の場合は設定方向とのズレの許容幅を示し、動的定位の場合はこの半値幅範囲の音源は同一音源と看做される）
+
 	protected:
 		XFELocalizerConfig(LocalizerType type) : type_(type){}
 	};
